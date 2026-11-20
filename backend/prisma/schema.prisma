@@ -1,0 +1,144 @@
+// VaultGuard – Prisma Schema (Phase 3–6)
+//
+// Zero-Knowledge Cybersecurity Password Management Architecture.
+// Plaintext passwords, plaintext item metadata, and vault encryption keys
+// are NEVER stored in this database.
+// All sensitive vault item data is encrypted client-side using AES-256-GCM.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum AccountStatus {
+  ACTIVE
+  LOCKED
+  DISABLED
+}
+
+model User {
+  id                 String        @id @default(uuid()) @db.VarChar(36)
+  email              String        @unique @db.VarChar(255)
+  emailNormalized    String        @unique @db.VarChar(255)
+  passwordHash       String        @db.VarChar(255)
+  vaultKdfSalt       String        @db.VarChar(255)
+  vaultKdfAlgorithm  String        @default("PBKDF2-HMAC-SHA256") @db.VarChar(50)
+  vaultKdfParameters Json
+  accountStatus      AccountStatus @default(ACTIVE)
+  emailVerifiedAt    DateTime?
+  syncVersion        Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  vaultItems         VaultItem[]
+  devices            Device[]
+  sessions           Session[]
+  vaultVerification  VaultVerification?
+
+  @@map("users")
+}
+
+model VaultItem {
+  id                   String    @id @default(uuid()) @db.VarChar(36)
+  userId               String    @db.VarChar(36)
+  encryptedPayload     Bytes     @db.MediumBlob
+  initializationVector Bytes     @db.VarBinary(32)
+  authenticationTag    Bytes     @db.VarBinary(16)
+  encryptionAlgorithm  String    @default("AES-256-GCM") @db.VarChar(50)
+  encryptionVersion    Int       @default(1)
+  revision             Int       @default(1)
+  syncVersion          Int       @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@index([deletedAt])
+  @@index([userId, deletedAt])
+  @@index([userId, updatedAt])
+  @@index([userId, syncVersion])
+  @@index([syncVersion])
+  @@map("vault_items")
+}
+
+model Device {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  userId           String    @db.VarChar(36)
+  deviceIdentifier String    @db.VarChar(255)
+  deviceName       String?   @db.VarChar(255)
+  lastSeenAt       DateTime?
+  removedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions         Session[]
+
+  @@unique([userId, deviceIdentifier])
+  @@index([userId])
+  @@map("devices")
+}
+
+// Phase 6: Session Management
+model Session {
+  id            String        @id @default(uuid()) @db.VarChar(36)
+  userId        String        @db.VarChar(36)
+  deviceId      String        @db.VarChar(36)
+  lastUsedAt    DateTime      @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  createdAt     DateTime      @default(now())
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device        Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+  @@index([deviceId])
+  @@index([userId, revokedAt])
+  @@map("sessions")
+}
+
+// Phase 6: Refresh Token Management (rotating, single-use)
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  sessionId  String    @db.VarChar(36)
+  tokenHash  String    @unique @db.VarChar(64)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  consumedAt DateTime?
+  revokedAt  DateTime?
+
+  session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("refresh_tokens")
+}
+
+// Phase 9.1: Server-Synchronized Encrypted Master-Password Verification Canary
+// Zero-Knowledge Architecture: The backend stores ONLY ciphertext, IV, and auth tag.
+// It never receives or stores plaintext verifiers, derived keys, or master passwords.
+model VaultVerification {
+  id                   String   @id @default(uuid()) @db.VarChar(36)
+  userId               String   @unique @db.VarChar(36)
+  encryptedPayload     Bytes    @db.MediumBlob
+  initializationVector Bytes    @db.VarBinary(32)
+  authenticationTag    Bytes    @db.VarBinary(16)
+  encryptionAlgorithm  String   @default("AES-256-GCM") @db.VarChar(50)
+  encryptionVersion    Int      @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("vault_verifications")
+}

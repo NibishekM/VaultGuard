@@ -1,0 +1,66 @@
+﻿# ============================================================
+# VaultGuard – Root .gitignore
+# ============================================================
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production Build Outputs
+frontend/.next/
+frontend/out/
+backend/dist/
+*.tsbuildinfo
+
+# Generated Prisma Client (regenerate with: cd backend && npm run db:generate)
+backend/src/generated/
+
+# Environment and Secret Files (NEVER COMMIT REAL CREDENTIALS)
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/.env.local
+frontend/.env.*.local
+backend/.env
+backend/.env.*
+
+# Retain sanitized configuration templates
+!.env.example
+!frontend/.env.example
+!backend/.env.example
+
+# Logs and Debug Output
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime and Cache
+.turbo/
+.vercel/
+.cache/
+.eslintcache
+
+# Database dumps (never commit real data)
+*.sql.gz
+*.sql.tar
+*.dump
+*.backup
+
+# OS and Editor Artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Verification Artifacts and Reports
+*-report.md
+*audit-report.md
+*reconciliation.md
