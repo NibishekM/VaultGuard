@@ -62,9 +62,8 @@ export function getApiBaseUrl(): string {
   if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/+$/, "");
   }
-  return "http://localhost:5000";
+  return "";
 }
-
 // Single in-flight refresh promise to prevent refresh races
 let refreshPromise: Promise<string | null> | null = null;
 
