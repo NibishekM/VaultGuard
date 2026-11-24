@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Router as ExpressRouter } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import type { Request } from "express";
 import { authController } from "../controllers/authController.js";
@@ -6,7 +6,7 @@ import { validateBody } from "../middleware/validationMiddleware.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { registerSchema, loginWithDeviceSchema } from "../utils/validation.js";
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * Strict Rate Limiter for Authentication Endpoints

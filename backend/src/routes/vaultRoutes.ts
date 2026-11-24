@@ -1,4 +1,4 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Router as ExpressRouter } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { vaultController } from "../controllers/vaultController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -11,7 +11,7 @@ import {
   batchImportVaultSchema
 } from "../utils/vaultValidation.js";
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // Enforce strict Bearer JWT authentication on all vault operations first
 router.use(requireAuth);

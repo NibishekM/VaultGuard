@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -8,7 +8,7 @@ import vaultRoutes from "./routes/vaultRoutes.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import syncRoutes from "./routes/syncRoutes.js";
 
-const app = express();
+const app: Express = express();
 
 // Security Headers
 app.use(helmet());

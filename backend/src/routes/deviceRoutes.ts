@@ -1,11 +1,11 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Router as ExpressRouter } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { deviceController } from "../controllers/deviceController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { validateParams } from "../middleware/validationMiddleware.js";
 import { deviceIdParamSchema } from "../utils/deviceValidation.js";
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * Device Management Rate Limiter

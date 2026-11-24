@@ -1,9 +1,9 @@
-import { Router, type Request } from "express";
+import { Router, type Request, type Router as ExpressRouter } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { syncController } from "../controllers/syncController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // Enforce strict Bearer JWT authentication and session validation first
 router.use(requireAuth);
